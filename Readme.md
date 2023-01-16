@@ -7,7 +7,7 @@
 ```bash
 docker compose up -d
 virtualenv venv
-sourse venv/bin/activate
+source venv/bin/activate
 pip3 install -r requirements.txt
 python3 main.py
 ```
