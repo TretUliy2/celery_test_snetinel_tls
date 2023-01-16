@@ -1,0 +1,125 @@
+version: '3.2'
+services:
+  celery_worker:
+    build: .
+    command:
+      - "celery"
+      - "-A"
+      - "tasks"
+      - "worker"
+      - "--loglevel=INFO"
+    environment:
+      - "REDIS_HOST=redis1"
+    volumes:
+      - ./config/ssl/worker:/etc/redis/ssl
+    networks:
+      - redis_tier
+
+  redis1:
+    user: "${UID}:${GID}"
+    container_name: redis1
+    image: bitnami/redis:7.0.7
+    networks:
+      - redis_tier
+    environment:
+      - "REDIS_REPLICATION_MODE=master"
+      - "REDIS_PASSWORD=password"
+      - "REDIS_TLS_ENABLED=yes"
+      - "REDIS_TLS_CERT_FILE=/etc/redis/ssl/redis1.crt"
+      - "REDIS_TLS_KEY_FILE=/etc/redis/ssl/redis1.key"
+      - "REDIS_TLS_CA_FILE=/etc/redis/ssl/ca.crt"
+      - "REDIS_TLS_AUTH_CLIENTS=no"
+
+    volumes:
+      - ./config/ssl/redis1:/etc/redis/ssl/
+
+  redis2:
+    user: "${UID}:${GID}"
+    container_name: redis2
+    image: bitnami/redis:7.0.7
+    networks:
+      - redis_tier
+    environment:
+      - "REDIS_REPLICATION_MODE=slave"
+      - "REDIS_MASTER_HOST=redis1"
+      - "REDIS_MASTER_PASSWORD=password"
+      - "REDIS_PASSWORD=password"
+      - "REDIS_TLS_ENABLED=yes"
+      - "REDIS_TLS_CERT_FILE=/etc/redis/ssl/redis2.crt"
+      - "REDIS_TLS_KEY_FILE=/etc/redis/ssl/redis2.key"
+      - "REDIS_TLS_CA_FILE=/etc/redis/ssl/ca.crt"
+      - "REDIS_TLS_AUTH_CLIENTS=no"
+    volumes:
+      - ./config/ssl/redis2:/etc/redis/ssl/
+#
+#  redis3:
+#    container_name: redis3
+#    image: bitnami/redis:7.0.7
+#    networks:
+#      - redis_tier
+#    environment:
+#      - "REDIS_REPLICATION_MODE=slave"
+#      - "REDIS_MASTER_HOST=redis1"
+#      - "REDIS_MASTER_PASSWORD=password"
+#      - "REDIS_PASSWORD=password"
+
+  redis-sentinel1:
+    user: "${UID}:${GID}"
+    container_name: sentinel1
+    image: 'bitnami/redis-sentinel:latest'
+    environment:
+      - "REDIS_MASTER_HOST=redis1"
+      - "REDIS_MASTER_PASSWORD=password"
+      - "REDIS_SENTINEL_PASSWORD=password"
+      - "REDIS_SENTINEL_PORT_NUMBER=26379"
+      - "REDIS_SENTINEL_TLS_ENABLED=yes"
+      - "REDIS_SENTINEL_TLS_CA_FILE=/etc/redis/ssl/ca.crt"
+      - "REDIS_SENTINEL_TLS_KEY_FILE=/etc/redis/ssl/sentinel1.key"
+      - "REDIS_SENTINEL_TLS_CERT_FILE=/etc/redis/ssl/sentinel1.crt"
+      - "REDIS_SENTINEL_TLS_AUTH_CLIENTS=no"
+    volumes:
+      - ./config/ssl/sentinel1/:/etc/redis/ssl
+    networks:
+      - redis_tier
+
+  redis-sentinel2:
+    user: "${UID}:${GID}"
+    container_name: sentinel2
+    image: 'bitnami/redis-sentinel:latest'
+    environment:
+      - "REDIS_MASTER_HOST=redis1"
+      - "REDIS_MASTER_PASSWORD=password"
+      - "REDIS_SENTINEL_PASSWORD=password"
+      - "REDIS_SENTINEL_PORT_NUMBER=26379"
+      - "REDIS_SENTINEL_TLS_ENABLED=yes"
+      - "REDIS_SENTINEL_TLS_CERT_FILE=/etc/redis/ssl/sentinel2.crt"
+      - "REDIS_SENTINEL_TLS_KEY_FILE=/etc/redis/ssl/sentinel2.key"
+      - "REDIS_SENTINEL_TLS_CA_FILE=/etc/redis/ssl/ca.crt"
+      - "REDIS_SENTINEL_TLS_AUTH_CLIENTS=no"
+    volumes:
+      - ./config/ssl/sentinel2/:/etc/redis/ssl
+    networks:
+      - redis_tier
+
+  redis-sentinel3:
+    user: "${UID}:${GID}"
+    container_name: sentinel3
+    image: 'bitnami/redis-sentinel:latest'
+    environment:
+      - "REDIS_MASTER_HOST=redis1"
+      - "REDIS_MASTER_PASSWORD=password"
+      - "REDIS_SENTINEL_PASSWORD=password"
+      - "REDIS_SENTINEL_PORT_NUMBER=26379"
+      - "REDIS_SENTINEL_TLS_ENABLED=yes"
+      - "REDIS_SENTINEL_TLS_CERT_FILE=/etc/redis/ssl/sentinel3.crt"
+      - "REDIS_SENTINEL_TLS_KEY_FILE=/etc/redis/ssl/sentinel3.key"
+      - "REDIS_SENTINEL_TLS_CA_FILE=/etc/redis/ssl/ca.crt"
+      - "REDIS_SENTINEL_TLS_AUTH_CLIENTS=no"
+    volumes:
+      - ./config/ssl/sentinel3/:/etc/redis/ssl
+    networks:
+      - redis_tier
+
+networks:
+  redis_tier:
+    driver: bridge
