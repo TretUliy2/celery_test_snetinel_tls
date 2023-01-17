@@ -19,4 +19,7 @@ pip3 install -r requirements.txt
 python3 main.py
 ```
 
-
+- Watch results
+```bash 
+docker compose logs -f
+```
